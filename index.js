@@ -5,6 +5,7 @@ const itemRouter=require("./routes/itemRoute");
 const userRouter=require('./routes/userRoute');
 const authRouter=require('./routes/authRoute');
 const errorRouter=require('./routes/errorRoute');
+const apimsRouter=require('./routes/apimsRoute');
 const connection=require("./config/database");
 const logger=require("./middleware/logger");
 
@@ -25,6 +26,7 @@ app.use(homerouter);
 app.use("/api/auth", authRouter);
 app.use("/api/items",itemRouter);
 app.use("/api/users", userRouter);
+app.use("/api/apims", apimsRouter);
 app.use(errorRouter);
 
 app.listen(process.env.PORT,()=>{
