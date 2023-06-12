@@ -2,6 +2,7 @@ const userModel = require('../model/user');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const ldap = require('ldapjs');
+const callAPI = require('../config/apims');
 
 const registerUser = async (req, res) => {
   console.log("Inside register User");
@@ -46,15 +47,26 @@ const loginUser = async (req, res) => {
 const adLoginUser = (req, res) => {
   //console.log(req.query);
   const { username, password } = req.query;
+  const domainName = username + '@CTZNBANK.COM';
+  console.log(`username: ${username}, domainName: ${domainName}, password:${password} `);
   const client = ldap.createClient({
     url: process.env.LDAP_URL
   });
 
-  client.bind(username, password, (err) => {
+  client.bind(domainName, password, (err) => {
     if (err) {
       res.status(401).send(err);
     } else {
-      res.status(200).send('Authentication successful');
+      //GET THE EMPLOYEE DETAIL BASED ON DOMAIN NAME WHILE AUTHENTICATING
+      const functionName = process.env.EMP_DETAIL_BY_DOMAIN;
+      const requestModel = { "domainUserName": `${username}` };
+
+      async function fetchData() {
+        const empDetail = await callAPI(functionName, requestModel);
+        res.status(200).send(empDetail);
+      };
+      fetchData();
+      //res.status(200).send('Authentication successful');
     }
     client.unbind();
   });

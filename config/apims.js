@@ -6,7 +6,7 @@ const filePath='./certificate/PrivateKey_intranet.pem';
 const { Console } = require('console');
 const axios= require('axios');
 
-function callAPI (funName,reqModel){
+async function callAPI (funName,reqModel){
     const TimeStamp = dayjs().format("YYYY-MM-DDTHH:mm:ss.000");
     const functionName=funName;
     const requestModel=reqModel;
