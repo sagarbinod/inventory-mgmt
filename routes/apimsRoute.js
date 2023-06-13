@@ -5,7 +5,11 @@ const {
     getBranchList,
     getDepartmentList,
     getAllEmployees,
-    getSingleEmployee
+    getSingleEmployee,
+    getEmployeesFromBranch,
+    getEmployeesFromDepartment,
+    getEmployeeHOD,
+    getEmployeeBM
 } = require('../controller/apimsController');
 
 router.get('/getData', getDataFromApims);
@@ -16,6 +20,14 @@ router.get('/departmentList', getDepartmentList);
 
 router.get('/employeeList', getAllEmployees);
 
-router.get('/employeeId/:empId', getSingleEmployee)
+router.get('/employeeId/:empId', getSingleEmployee);
+
+router.get('/branchEmployeeList/:branchId', getEmployeesFromBranch);
+
+router.get('/deptEmployeeList/:departmentId', getEmployeesFromDepartment);
+
+router.get('/bmEmployeeList', getEmployeeBM);
+
+router.get('/hodEmployeeList', getEmployeeHOD);
 
 module.exports=router;
