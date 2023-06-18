@@ -1,34 +1,40 @@
 const express=require("express");
 const morgan=require("morgan");
+const cors=require('cors');
 const homerouter=require("./routes/home");
 const itemRouter=require("./routes/itemRoute");
 const userRouter=require('./routes/userRoute');
 const authRouter=require('./routes/authRoute');
 const errorRouter=require('./routes/errorRoute');
 const apimsRouter=require('./routes/apimsRoute');
-const connection=require("./config/database");
-const mysql_connection=require("./config/mysqldatabase");
-const logger=require("./middleware/logger");
+const auditMasterRoute=require('./routes/auditMasterRoute');
+const auditCommentRoute=require('./routes/auditCommentRoute');
+const commentFollowupRoute=require('./routes/commentFollowupRoute');
+const {checkAPIKey, verifyTokenAdmin, verifyTokenAdminOrUser,verifyToken}=require('./middleware/auth');
 
+
+//const { connection } = require('./config/mysqldatabase');
+const logger=require("./middleware/logger");
 
 const app=express();
 //Setting up ENV in our project
 require("dotenv").config();
+//CORS (Cross-Origin Resource Sharing)
+app.use(cors());
 
 //global middlewares
 app.use(morgan('dev'));
 app.use(logger);
 app.use(express.json());
 
-
-//connect to database
-connection();
-mysql_connection();
 app.use(homerouter);
 app.use("/api/auth", authRouter);
 app.use("/api/items",itemRouter);
 app.use("/api/users", userRouter);
-app.use("/api/apims", apimsRouter);
+app.use("/api/apims",verifyToken, apimsRouter);
+app.use("/api/auditMaster",verifyToken,auditMasterRoute);
+app.use("/api/auditComment", auditCommentRoute);
+app.use("api/commentFollowup", commentFollowupRoute);
 app.use(errorRouter);
 
 app.listen(process.env.PORT,()=>{

@@ -46,7 +46,7 @@ const loginUser = async (req, res) => {
 
 const adLoginUser = (req, res) => {
   //console.log(req.query);
-  const { username, password } = req.query;
+  const { username, password } = req.body;
   const domainName = username + '@CTZNBANK.COM';
   console.log(`username: ${username}, domainName: ${domainName}, password:${password} `);
   const client = ldap.createClient({
@@ -63,7 +63,16 @@ const adLoginUser = (req, res) => {
 
       async function fetchData() {
         const empDetail = await callAPI(functionName, requestModel);
-        res.status(200).send(empDetail);
+        if (empDetail) {
+          const accessToken = jwt.sign(
+            { "data": empDetail },
+            process.env.JWT_SECRET,
+            { "expiresIn": "1d" });
+              empDetail.Data.token=accessToken;
+          res.status(200).json(empDetail);
+        } else {
+          res.status(401).send("Authentication Failed");
+        }
       };
       fetchData();
       //res.status(200).send('Authentication successful');
