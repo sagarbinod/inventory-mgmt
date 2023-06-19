@@ -19,9 +19,9 @@ class AuditMaster {
     acmDate;
     createdBy;
     createdOn;
-    verifiedBy;
-    verifiedOn;
-    is_deleted;
+    updatedBy;
+    updatedOn;
+    isDeleted;
 }
 
 module.exports = AuditMaster;
