@@ -9,7 +9,8 @@ const errorRouter=require('./routes/errorRoute');
 const apimsRouter=require('./routes/apimsRoute');
 const auditMasterRoute=require('./routes/auditMasterRoute');
 const auditCommentRoute=require('./routes/auditCommentRoute');
-const commentFollowupRoute=require('./routes/commentFollowupRoute');
+const commentHeadingRoute=require('./routes/commentHeadingRoute');
+
 const {checkAPIKey, verifyTokenAdmin, verifyTokenAdminOrUser,verifyToken}=require('./middleware/auth');
 
 
@@ -34,7 +35,7 @@ app.use("/api/users", userRouter);
 app.use("/api/apims",verifyToken, apimsRouter);
 app.use("/api/auditMaster",verifyToken,auditMasterRoute);
 app.use("/api/auditComment", auditCommentRoute);
-app.use("api/commentFollowup", commentFollowupRoute);
+app.use("/api/commentHeading",verifyToken,commentHeadingRoute);
 app.use(errorRouter);
 
 app.listen(process.env.PORT,()=>{
