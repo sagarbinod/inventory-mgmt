@@ -12,7 +12,8 @@ const {
 const {
     addCommentSpecialAttn,
     getCommentSpecialAttnByCommentId,
-    updateCommentSpecialAttnByCommentId
+    updateCommentSpecialAttnByCommentId,
+    validateSpecialAttn
 } = require("../controller/commentSpecialAttnController");
 
 const addAuditComment = async (req, res) => {
@@ -86,9 +87,20 @@ const updateAuditCommentById = async (req, res) => {
                         await updateCommentSpecialMarkByCommentId(auditComment.id, [row]);
                     }
                 });
-                
-
             };
+
+            if (commentSpecialAttn.length > 0) {
+                commentSpecialAttn.forEach(async (row) => {
+                    const checkRecord = await validateSpecialAttn(auditComment.id, [row]);
+                    console.log(row);
+                    console.log(checkRecord);
+                    if (checkRecord === 0) {
+                        await addCommentSpecialAttn(auditComment.id, [row]);
+                    } else if (checkRecord === 1) {
+                        await updateCommentSpecialAttnByCommentId(auditComment.id, [row]);
+                    }
+                });
+            }
             //await updateCommentSpecialMarkByCommentId(auditComment.id, commentSpecialMark);
             //await updateCommentSpecialAttnByCommentId(auditComment.id, commentSpecialAttn);
             res.status(200).send("Comment updated successfully");

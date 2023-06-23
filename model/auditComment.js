@@ -18,6 +18,10 @@ class AuditComment {
     auditStatus;
     closingRemarksAudit;
     isDeleted;
+    commitmentDays;
+    auditDeadline;
+    complianceStatus;
+    closingRemarksCompliance;
 };     
 
 module.exports = AuditComment;
