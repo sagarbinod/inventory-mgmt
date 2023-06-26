@@ -78,9 +78,12 @@ const getEmployeeHOD = async (req, res) => {
     const result = await callAPI(functionName, requestModel);
     const filteredResult = (result.Data.employeeList)
         .filter(employee => (employee.functionalTitle).substring(0, 4) === 'Head')
-        .filter(employee => employee.solId === "999");
+        .filter(employee => employee.solId === "999")
+        .filter(employee => (employee.departmentName).substring (0,7) !== 'Cluster')
+    const finalresult = { "departmentList": filteredResult };
 
-    res.status(200).send(filteredResult);
+
+    res.status(200).send(finalresult);
 };
 
 const getEmployeeBM = async (req, res) => {
@@ -98,7 +101,9 @@ const getEmployeeBM = async (req, res) => {
                 return 0;
             }
         });
-    res.status(200).send(filteredResult);
+
+    const finalresult = { "branchList": filteredResult };
+    res.status(200).send(finalresult);
 
 };
 

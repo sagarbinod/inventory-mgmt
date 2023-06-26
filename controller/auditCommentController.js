@@ -141,8 +141,38 @@ const listAuditComentByAuditId = async (req, res) => {
     }
 };
 
+//check the audit comment status wheather comment is approved by head or not
+//also check the audit comment status if it is closed or not
+const getAuditStatus = async (commentId) => {
+    const sql = "select auditStatus from audit_comment where id=?";
+    try {
+        const [rows, fields] = await pool.execute(sql, [commentId]);
+        let auditStatus = "";
+        rows.forEach(element => auditStatus = element.auditStatus);
+        return auditStatus;
+    } catch (error) {
+        console.error("Error while validating audit comment");
+    }
+};
+
+
+//to change the audit comment status
+const setAuditStatus = async (commentId, status) => {
+    const sql = "update audit_comment set auditStatus=? where id =? and auditStatus!='C';"
+    try {
+        const [rows, fields] = await pool.execute(sql, [status, commentId]);
+        return true;
+    } catch (error) {
+        console.error('Error while updating audit comment table auditStatus field ' + error);
+        return false;
+    }
+}
+
+
+
 module.exports = {
     addAuditComment,
     updateAuditCommentById,
-    listAuditComentByAuditId
+    listAuditComentByAuditId,
+    getAuditStatus
 }
