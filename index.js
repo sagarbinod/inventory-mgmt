@@ -1,6 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require('cors');
+const bodyParser = require('body-parser');
 const homerouter = require("./routes/home");
 const itemRouter = require("./routes/itemRoute");
 const userRouter = require('./routes/userRoute');
@@ -11,7 +12,7 @@ const auditMasterRoute = require('./routes/auditMasterRoute');
 const auditCommentRoute = require('./routes/auditCommentRoute');
 const commentHeadingRoute = require('./routes/commentHeadingRoute');
 const commentReplyRoute = require('./routes/commentReplyRoute');
-const commentFollowupRoute = require('./routes/commentFollowupRoute');
+const complianceFollowupRoute = require('./routes/complianceFollowupRoute');
 
 const { checkAPIKey, verifyTokenAdmin, verifyTokenAdminOrUser, verifyToken } = require('./middleware/auth');
 
@@ -29,6 +30,8 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(logger);
 app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 
 app.use(homerouter);
 app.use("/api/auth", authRouter);
@@ -39,7 +42,7 @@ app.use("/api/auditMaster", verifyToken, auditMasterRoute);
 app.use("/api/auditComment", auditCommentRoute);
 app.use("/api/commentHeading", verifyToken, commentHeadingRoute);
 app.use("/api/commentReply", verifyToken, commentReplyRoute);
-app.use("/api/commentFollowup", verifyToken, commentFollowupRoute);
+app.use("/api/complianceFollowup", verifyToken, complianceFollowupRoute);
 app.use(errorRouter);
 
 app.listen(process.env.PORT, () => {

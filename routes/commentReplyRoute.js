@@ -12,7 +12,7 @@ router.get('/listCommentReply/:commentId', listCommentReplyByCommentId);
 
 router.post('/updateCommentReply', updateCommentReply);
 
-router.post('/deleteCommentReply', deleteCommentReply);
+router.post('/deleteCommentReply/:commentId/:id', deleteCommentReply);
 
 
 module.exports = router;

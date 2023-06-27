@@ -7,7 +7,8 @@ const getAllCommentHeadings = async (req, res) => {
     console.log("Getting all records from Comment Heading");
     const sql = "select * from comment_heading where isDeleted='F' order by id";
     try {
-        const [rows, fields] = await pool.execute(sql);
+        let [rows, fields] = await pool.execute(sql);
+        rows = { "headingList": rows };
         res.status(200).json(rows);
     } catch (error) {
         console.error("Error while fetching comment Heading " + error);

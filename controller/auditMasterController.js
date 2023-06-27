@@ -11,18 +11,18 @@ const addAuditMasterRecord = async (req, res) => {
     console.log(req.body);
     const { typeOfAudit, fiscalYear, auditUnit, auditUnitDesc, auditHead, corporateTitleAuditHead, auditStartDate,
         auditEndDate, onsiteStartDate, onsiteEndDate, netWorkingDays, auditLeader, staffAtBranch,
-        acmNo, acmDate, createdBy, auditTeam } = req.body;
+         createdBy, auditTeam } = req.body;
 
     try {
         const sql = `insert into audit_master 
             (typeOfAudit,fiscalYear,auditUnit,auditUnitDesc,auditHead,corporateTitleAuditHead,auditStartDate,
-                auditEndDate,onsiteStartDate,onsiteEndDate,netWorkingDays,auditLeader,staffAtBranch,acmNo,acmDate,createdBy) 
+                auditEndDate,onsiteStartDate,onsiteEndDate,netWorkingDays,auditLeader,staffAtBranch,createdBy) 
             values 
-            (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+            (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
         console.log(sql);
 
         const [result] = await pool.execute(sql, [typeOfAudit, fiscalYear, auditUnit, auditUnitDesc, auditHead, corporateTitleAuditHead, auditStartDate,
-            auditEndDate, onsiteStartDate, onsiteEndDate, netWorkingDays, auditLeader, staffAtBranch, acmNo, acmDate, createdBy]);
+            auditEndDate, onsiteStartDate, onsiteEndDate, netWorkingDays, auditLeader, staffAtBranch, createdBy]);
         console.log('New Audit Record Added ' + result.insertId);
         await insertAuditTeam(result.insertId, auditTeam);
         res.status(200).json("Record Added");
