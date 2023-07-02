@@ -18,6 +18,12 @@ const getDataFromApims = async (req, res) => {
 
 };
 
+const sendEmailFromApims = async (functionName, requestModel) => {
+    console.log(functionName, requestModel);
+    const result = await callAPI(functionName, requestModel);
+    return result;
+};
+
 const getBranchList = async (req, res) => {
     //fetching branch list 
     const functionName = process.env.BRANCH_LIST_API;
@@ -79,7 +85,7 @@ const getEmployeeHOD = async (req, res) => {
     const filteredResult = (result.Data.employeeList)
         .filter(employee => (employee.functionalTitle).substring(0, 4) === 'Head')
         .filter(employee => employee.solId === "999")
-        .filter(employee => (employee.departmentName).substring (0,7) !== 'Cluster')
+        .filter(employee => (employee.departmentName).substring(0, 7) !== 'Cluster')
     const finalresult = { "departmentList": filteredResult };
 
 
@@ -102,9 +108,29 @@ const getEmployeeBM = async (req, res) => {
             }
         });
 
-    const finalresult = { "branchList": filteredResult };
-    res.status(200).send(finalresult);
+    const finalResult = { "branchList": filteredResult };
+    res.status(200).send(finalResult);
 
+};
+
+const getExecutiveList = async (req, res) => {
+    const functionName = process.env.EMP_DETAIL_LIST_API;
+    const requestModel = {};
+    const result = await callAPI(functionName, requestModel);
+    let finalResult = [];
+    const filteredResult = (result.Data.employeeList)
+        .filter(employee => {
+            if (employee.designation === "Chief Executive Officer") {
+                finalResult.push(employee);
+            } else if (employee.designation === "Assistant General Manager") {
+                finalResult.push(employee)
+            } else if (employee.functionalTitle.substring(0, 5) === "Chief") {
+                finalResult.push(employee);
+            }
+        });
+
+     finalResult = { "executiveList": finalResult }
+    res.status(200).send(finalResult);
 };
 
 module.exports = {
@@ -116,5 +142,7 @@ module.exports = {
     getEmployeesFromBranch,
     getEmployeesFromDepartment,
     getEmployeeHOD,
-    getEmployeeBM
+    getEmployeeBM,
+    getExecutiveList,
+    sendEmailFromApims
 };

@@ -11,18 +11,19 @@ const addAuditMasterRecord = async (req, res) => {
     console.log(req.body);
     const { typeOfAudit, fiscalYear, auditUnit, auditUnitDesc, auditHead, corporateTitleAuditHead, auditStartDate,
         auditEndDate, onsiteStartDate, onsiteEndDate, netWorkingDays, auditLeader, staffAtBranch,
-         createdBy, auditTeam } = req.body;
+        createdBy, createdByName, auditTeam } = req.body;
 
     try {
         const sql = `insert into audit_master 
             (typeOfAudit,fiscalYear,auditUnit,auditUnitDesc,auditHead,corporateTitleAuditHead,auditStartDate,
-                auditEndDate,onsiteStartDate,onsiteEndDate,netWorkingDays,auditLeader,staffAtBranch,createdBy) 
+                auditEndDate,onsiteStartDate,onsiteEndDate,netWorkingDays,auditLeader,staffAtBranch,createdBy,createdByName) 
             values 
-            (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+            (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
         console.log(sql);
 
         const [result] = await pool.execute(sql, [typeOfAudit, fiscalYear, auditUnit, auditUnitDesc, auditHead, corporateTitleAuditHead, auditStartDate,
-            auditEndDate, onsiteStartDate, onsiteEndDate, netWorkingDays, auditLeader, staffAtBranch, createdBy]);
+            auditEndDate, onsiteStartDate, onsiteEndDate, netWorkingDays, auditLeader, staffAtBranch, createdBy,
+            createdByName]);
         console.log('New Audit Record Added ' + result.insertId);
         await insertAuditTeam(result.insertId, auditTeam);
         res.status(200).json("Record Added");
@@ -33,14 +34,25 @@ const addAuditMasterRecord = async (req, res) => {
 
 const getAllRecordAuditMaster = async (req, res) => {
     console.log("Getting All records of Audit Master");
-    const sql = "select * from audit_master where isDeleted='F' order by id desc";
-    console.log(sql);
+    const { createdBy } = req.body;
+    console.log(createdBy);
+    let sql = "";
+    if (createdBy === '') {
+        sql = "select * from audit_master where isDeleted='F' order by id desc";
+    } else if (createdBy !== '') {
+        sql = `select * from audit_master where isDeleted='F' 
+                    and createdBy='${req.body.createdBy}' order by id desc`;
+    }
+
     try {
+
         const [rows, fields] = await pool.execute(sql);
+        console.log(sql);
+
         console.log("Record fetched");
         console.log(rows);
         if (rows.length === 0) {
-            res.status(200).send("No records found");
+            return res.status(200).send("No records found");
         }
         const [rows1] = await getAllMembers();
         const mergedResult = rows.reduce((acc, row) => {
@@ -51,7 +63,9 @@ const getAllRecordAuditMaster = async (req, res) => {
             acc.push(row);
             return acc;
         }, []);
-        res.status(200).json(mergedResult);
+
+        const output = { "auditMasterListAll": mergedResult }
+        res.status(200).json(output);
 
     } catch (error) {
         console.log('Error while getting records of Audit Master', error);
@@ -133,6 +147,7 @@ const updateAuditMasterById = async (req, res) => {
             acmNo='${auditMaster.acmNo}',
             acmDate='${auditMaster.acmDate}',
             updatedBy='${auditMaster.updatedBy}',
+            updatedByName=${auditMaster.updatedByName},
             updatedOn= '${formattedDateTime}'
             where id=${auditMaster.id} and isDeleted='F'`
             //console.log("Audit Master update query " + sql);
@@ -144,7 +159,7 @@ const updateAuditMasterById = async (req, res) => {
                         if (checkRecord === 0) {
                             insertAuditTeam(auditMaster.id, [row]);
                         } else if (checkRecord === 1) {
-                            updateTeamMemberById(auditMaster.id,row);
+                            updateTeamMemberById(auditMaster.id, row);
                         }
                     });
                 }

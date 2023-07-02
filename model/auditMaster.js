@@ -18,8 +18,10 @@ class AuditMaster {
     acmNo;
     acmDate;
     createdBy;
+    createdByName;
     createdOn;
     updatedBy;
+    updatedByName;
     updatedOn;
     isDeleted;
 }

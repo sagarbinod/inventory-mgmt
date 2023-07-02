@@ -53,9 +53,41 @@ const validateSpecialAttn = async (commentId, specialAttn) => {
     }
 };
 
+const checkRecordToSendEmail = async () => {
+    const sql = `select * from comment_special_attn 
+    where commentId in(select id from audit_comment where auditStatus='AF' and isDeleted='F' 
+    and date(createdOn)=date(now())) 
+    and isDeleted='F' and emailStatus='N'`;
+    try {
+        const [rows, fields] = await pool.execute(sql);
+        if (rows.length !== 0) {
+            return rows;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error("Error while fetching comment special attention list " + error);
+        return false;
+    }
+}
+
+const updateSendEmailStatus = async (id) =>{
+    console.log("Updating send email status for special attention ")
+    const sql=`update comment_special_attn set emailStatus='Y' where id=? and isDeleted='F'`;
+    try{
+        const [rows, fields] = await pool.execute(sql,[id]);
+        return true;
+    }catch(error){
+        console.log('Error while updating send email status for audit special attention: '+ error);
+        return false;
+    }
+}
+
 module.exports = {
     addCommentSpecialAttn,
     getCommentSpecialAttnByCommentId,
     updateCommentSpecialAttnByCommentId,
-    validateSpecialAttn
+    validateSpecialAttn,
+    checkRecordToSendEmail,
+    updateSendEmailStatus
 };

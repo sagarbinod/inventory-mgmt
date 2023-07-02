@@ -21,9 +21,14 @@ const { checkAPIKey, verifyTokenAdmin, verifyTokenAdminOrUser, verifyToken } = r
 const logger = require("./middleware/logger");
 
 const app = express();
+
 //Setting up ENV in our project
 require("dotenv").config();
-//CORS (Cross-Origin Resource Sharing)
+//for deleting temporary files job which run once a day
+require('./config/fileCleanup');
+//for sending email to audit special attention members after posting comment and after approval
+require('./config/sendEmailSpecialAttn');
+//CORS (Cross-Origin Resource Sharing middleware)
 app.use(cors());
 
 //global middlewares
@@ -31,7 +36,6 @@ app.use(morgan('dev'));
 app.use(logger);
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 
 app.use(homerouter);
 app.use("/api/auth", authRouter);

@@ -10,7 +10,8 @@ const {
     getEmployeesFromBranch,
     getEmployeesFromDepartment,
     getEmployeeHOD,
-    getEmployeeBM
+    getEmployeeBM,
+    getExecutiveList
 } = require('../controller/apimsController');
 
 router.get('/getData', getDataFromApims);
@@ -30,5 +31,7 @@ router.get('/deptEmployeeList/:departmentId', getEmployeesFromDepartment);
 router.get('/bmEmployeeList', getEmployeeBM);
 
 router.get('/hodEmployeeList', getEmployeeHOD);
+
+router.get('/getExecutiveList',getExecutiveList);
 
 module.exports=router;
