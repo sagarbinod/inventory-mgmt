@@ -3,11 +3,11 @@ const CommentSpecialAttn = require("../model/commentSpecialAttn");
 
 const addCommentSpecialAttn = async (commentId, specialAttn) => {
     console.log("Adding audit comment special attention list");
-    const sql = "insert into comment_special_attn (name,email,commentId) values (?,?,?)";
+    const sql = "insert into comment_special_attn (name,email,commentId,attnType) values (?,?,?,?)";
     specialAttn.forEach(async element => {
         try {
-            if (element.name != "" && element.email !== "") {
-                await pool.execute(sql, [element.name, element.email, commentId]);
+            if (element.name != "" && element.email !== "" && element.attnType !=="") {
+                await pool.execute(sql, [element.name, element.email, commentId,element.attnType]);
             }
         } catch (error) {
             console.log("Error while inserting audit comment special values " + error);

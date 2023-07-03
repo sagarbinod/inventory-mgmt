@@ -28,6 +28,8 @@ require("dotenv").config();
 require('./config/fileCleanup');
 //for sending email to audit special attention members after posting comment and after approval
 require('./config/sendEmailSpecialAttn');
+//for downloading staff list one a day 
+require('./config/staffListDownload');
 //CORS (Cross-Origin Resource Sharing middleware)
 app.use(cors());
 

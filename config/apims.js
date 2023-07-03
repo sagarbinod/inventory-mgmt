@@ -37,7 +37,7 @@ async function callAPI (funName,reqModel){
         };
     // return "hello"
     const data = axios(config).then(function (response) {
-            console.log(JSON.stringify(response.data));
+           // console.log(JSON.stringify(response.data));
             //res.status(200).json(response.data);
             return response.data;
             }).catch(function (error) {
