@@ -2,7 +2,10 @@ const cron = require('node-cron');
 const { checkRecordToSendEmail,
     updateSendEmailStatus
 } = require('../controller/commentSpecialAttnController');
+const { saveEmailLog } = require('../controller/emailLogController');
 const { sendEmailFromApims } = require('../controller/apimsController');
+
+const { getAFAuditIdForEmailNotSent } = require('../controller/auditCommentController');
 const senderEmailAddress = process.env.SEND_EMAIL_ADDRESS;
 const senderEmailPassword = process.env.SEND_EMAIL_PASSWORD;
 const senderEmailAPI = process.env.EMAIL_API_APIMS;
@@ -19,39 +22,52 @@ const emailModel = {
 const cronSchedule = process.env.SPECIAL_ATTN_SEND_EMAIL_SCHEDULE;
 
 const sendEmail = async () => {
-    console.log("Special attention email send job started ");
-    const sendEmailList = await checkRecordToSendEmail();
-    const specialAttnId = [];
-    if (sendEmailList !== false) {
-        sendEmailList.forEach(element => {
-            specialAttnId.push(element);
-        });
-    }
+    console.log("Fetching AF id list whose email is not sent ");
+    const emailNotSentId = await getAFAuditIdForEmailNotSent();
 
+    if (emailNotSentId !== '' || emailNotSentId !== undefined) {
+        console.log("Send email special attention job started ");
+        emailNotSentId.forEach(async element => {
+            let specialAttentinEmailList = await checkRecordToSendEmail(element.id);
 
-    try {
-        specialAttnId.forEach(async element => {
-            console.log(element);
-            emailModel.toAddress = element.email;
-            emailModel.subject = "Internal Audit System Test Email";
-            emailModel.body = "Test";
-
-            const result = 0; //for uat testing
-            //const result = await sendEmailFromApims(senderEmailAPI, emailModel); //for implementation in live
-
-            console.log(result);
-            //if (result.Code === 0) { //for implementation in live
-            if (result === 0) { //for uat testing
-                console.log("after email send success");
-                const checkEmailSendStatus = await updateSendEmailStatus(element.id);
-                if (checkEmailSendStatus === true) {
-                    console.log("Email send successful for " + element.id);
+            let toEmailList = '';
+            let idList = [];//special attention record id
+            specialAttentinEmailList.forEach(e => {
+                if (toEmailList === '') {
+                    toEmailList = e.email;
+                    idList.push(e.id);
                 }
-            }
+                else {
+                    toEmailList = toEmailList + "," + e.email;
+                    idList.push(e.id);
+                }
+            })
 
+            //console.log("idList "+idList);
+
+            //code to send email
+            try {
+                emailModel.toAddress = toEmailList;
+                emailModel.ccAddress = ''
+                emailModel.subject = "Special attention issue from internal audit of ";
+                emailModel.body = "Test";
+                const result = await sendEmailFromApims(senderEmailAPI, emailModel);
+                //console.log(result);
+                if (result.Code === '0') {
+                    console.log("Special attention email sent successfully ");
+                    const { toAddress, ccAddress, subject, body } = emailModel;
+                    await saveEmailLog("To :" + toAddress + " cc: " + ccAddress + " subject : " + subject + " Message :" + body);
+                    //console.log("IdList " + idList);
+                    idList.forEach(async e => {
+                        console.log(e);
+                        await updateSendEmailStatus(e);
+                    });
+                }
+            } catch (error) {
+                console.log("Error while sending email " + error);
+            }
+            console.log(toEmailList);
         });
-    } catch (error) {
-        console.error("Error while sending specail attention email " + error);
     }
 
 };

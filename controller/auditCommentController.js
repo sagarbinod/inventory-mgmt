@@ -179,12 +179,28 @@ const setAuditStatus = async (commentId, status) => {
     }
 }
 
+const getAFAuditIdForEmailNotSent = async () => {
+    const sql = `select distinct AC.id from audit_comment AC join comment_special_attn CSA on 
+                AC.id=CSA.commentId
+                    where 
+                AC.auditStatus='AF' 
+                and Ac.isDeleted='F' 
+                and CSA.emailStatus='N' 
+                and CSA.isDeleted='F'`
+    try {
+        const [rows, fields] = await pool.execute(sql);
+        return rows;
+    } catch (error) {
+        console.log("Error while fetching Audit Forwarded Email Not sent id " + error);
+    }
 
+};
 
 module.exports = {
     addAuditComment,
     updateAuditCommentById,
     listAuditComentByAuditId,
     getAuditStatus,
-    getComplianceStatus
+    getComplianceStatus,
+    getAFAuditIdForEmailNotSent
 }

@@ -53,13 +53,11 @@ const validateSpecialAttn = async (commentId, specialAttn) => {
     }
 };
 
-const checkRecordToSendEmail = async () => {
+const checkRecordToSendEmail = async (commentId) => {
     const sql = `select * from comment_special_attn 
-    where commentId in(select id from audit_comment where auditStatus='AF' and isDeleted='F' 
-    and date(createdOn)=date(now())) 
-    and isDeleted='F' and emailStatus='N'`;
+    where commentId=? and isDeleted='F' and emailStatus='N'`;
     try {
-        const [rows, fields] = await pool.execute(sql);
+        const [rows, fields] = await pool.execute(sql,[commentId]);
         if (rows.length !== 0) {
             return rows;
         } else {

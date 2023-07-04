@@ -10,7 +10,6 @@ const getEmployeesList = async () => {
     console.log("Fetching Employee List");
     const employeeList = await callAPI(staffListAPI, requestModel);
     const result= await saveStaffList(employeeList);
-
 }
 
 
