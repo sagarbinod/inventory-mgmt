@@ -179,6 +179,8 @@ const setAuditStatus = async (commentId, status) => {
     }
 }
 
+
+//for special attention members only
 const getAFAuditIdForEmailNotSent = async () => {
     const sql = `select distinct AC.id from audit_comment AC join comment_special_attn CSA on 
                 AC.id=CSA.commentId
@@ -196,11 +198,40 @@ const getAFAuditIdForEmailNotSent = async () => {
 
 };
 
+const getAuditCommentById = async (id) => {
+    const sql = `select * from audit_comment where id=? and isDeleted='F'`;
+    try {
+        const [rows, fields] = await pool.execute(sql, [id]);
+        if (rows.length !== 0) {
+            const auditCommentRecord=rows.pop();//as this only contains single record
+            return auditCommentRecord;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error("Error while fetching audit comment based on comment id " + error);
+    }
+}
+
+//update audit status code after audit comment draft is finalized by IAD Head
+const setAuditStatusByIADHead = async (auditId,status)=>{
+    const sql = "update audit_comment set auditStatus=? where auditId =? and auditStatus!='C';"
+    try {
+        const [rows, fields] = await pool.execute(sql, [status, auditId]);
+        return true;
+    } catch (error) {
+        console.error('Error while updating audit comment table auditStatus field ' + error);
+        return false;
+    }
+}
+
 module.exports = {
     addAuditComment,
     updateAuditCommentById,
     listAuditComentByAuditId,
     getAuditStatus,
     getComplianceStatus,
-    getAFAuditIdForEmailNotSent
+    getAFAuditIdForEmailNotSent,
+    getAuditCommentById,
+    setAuditStatusByIADHead
 }

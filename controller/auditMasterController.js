@@ -5,6 +5,9 @@ const { insertAuditTeam,
     validateTeamMember } = require('../controller/auditTeamController');
 const { pool } = require('../config/mysqldatabase');
 const AuditMaster = require('../model/auditMaster');
+const formattedDateTime = require('../config/currentDate');
+const { setAuditStatusByIADHead } = require('../controller/auditCommentController');
+const { sendDraftFinalizedEmail } = require('../config/draftFinalizedEmail');
 
 const addAuditMasterRecord = async (req, res) => {
 
@@ -72,7 +75,7 @@ const getAllRecordAuditMaster = async (req, res) => {
     }
 };
 
-
+//Getting Audit Master by id for api call
 const getAuditMasterById = async (req, res) => {
     console.log("Getting records from Audit Master based on id= " + req.params.auditMasterId);
     const sql = `select * from audit_master where 
@@ -98,6 +101,21 @@ const getAuditMasterById = async (req, res) => {
         console.log('Error while getting records from audit master ' + err);
     }
 };
+
+const getAuditMasterRecordById = async (auditId) => {
+    const sql = `select * from audit_master where id=? and isDeleted='F'`;
+    try {
+        const [rows, fields] = await pool.execute(sql, [auditId]);
+        if (rows.length !== 0) {
+            const auditMasterRecord = rows.pop();//as this is fetching single record only
+            return auditMasterRecord;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error("Error while fetching audit master record " + auditId);
+    }
+}
 
 const deleteAuditMasterById = async (req, res) => {
     console.log('Deleting record from audit master ' + req.params.auditMasterId);
@@ -173,10 +191,50 @@ const updateAuditMasterById = async (req, res) => {
     }
 };
 
+//verify audit master record by audit head
+const verifyAuditMasterRecordIAD = async (req, res) => {
+    console.log('verifying audit master record after comment draft is finalized ');
+    const currentDateTime = formattedDateTime();
+    const { id, auditVerifiedBy, auditResponseDate, auditRemarks } = req.body;
+    const sql = `update audit_master set auditVerifiedBy=?,auditVerifiedOn=?, auditResponseDate=?, 
+                auditRemarks=? where id=?`;
+    try {
+        const [rows, fields] = await pool.execute
+            (sql, [auditVerifiedBy, currentDateTime, auditResponseDate, auditRemarks, id]);
+        if (rows.affectedRows === 1) {
+            let checkStatus = await setAuditStatusByIADHead(id, 'AF');
+            if (checkStatus === true) {
+                let checkEmailStatus = await sendDraftFinalizedEmail(await getAuditMasterRecordById(id));
+                if (checkEmailStatus === true) {
+                    console.log("Email send successful after audit comment draft verification by IAD Head");
+                } else {
+                    console.log("Failed to send email after audit comment draft verification ");
+                }
+                res.status(200).send("Success");
+            } else {
+                res.status(500).send("Internal server error");
+            }
+        } else {
+            res.status(500).send('Error while verifying audit comment draft');
+        }
+    } catch (error) {
+        console.log('Error while verifying audit master record by IAD ' + error);
+        res.status(500).send('Error while ')
+    }
+};
+
+//close audit master record by audit head
+const closeAuditMasterRecordIAD = async () => {
+
+}
+
+
 module.exports = {
     addAuditMasterRecord,
     getAllRecordAuditMaster,
     getAuditMasterById,
+    getAuditMasterRecordById,
     deleteAuditMasterById,
-    updateAuditMasterById
+    updateAuditMasterById,
+    verifyAuditMasterRecordIAD
 };

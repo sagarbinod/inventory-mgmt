@@ -17,6 +17,7 @@ class StaffList{
     isABM;
     isOI;
     isCreditIncharge;
+    provinceId;
 };
 
 module.exports=StaffList;

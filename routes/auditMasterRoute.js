@@ -6,7 +6,8 @@ const {
     getAllRecordAuditMaster,
     getAuditMasterById,
     deleteAuditMasterById,
-    updateAuditMasterById
+    updateAuditMasterById,
+    verifyAuditMasterRecordIAD
 } = require('../controller/auditMasterController');
 
 //router.post('/addRecord',verifyToken,addAuditMasterRecord);
@@ -19,6 +20,8 @@ router.get('/getSingleRecord/:auditMasterId', getAuditMasterById);
 router.post('/deleteRecord/:auditMasterId', deleteAuditMasterById);
 //updating audit master record
 router.post('/updateRecord', updateAuditMasterById);
+//audit comment draft verification by IAD
+router.post('/draftVerify', verifyAuditMasterRecordIAD);
 
 
 module.exports = router;
