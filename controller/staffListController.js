@@ -71,7 +71,7 @@ const getBMByBranchCode = async (branchCode) => {
     try {
         const [rows, fields] = await pool.execute(sql, [branchCode]);
         if (rows.length !== 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
@@ -86,7 +86,7 @@ const getABMByBranchCode = async (branchCode) => {
     try {
         const [rows, fields] = await pool.execute(sql, [branchCode]);
         if (rows.length !== 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
@@ -101,7 +101,7 @@ const getOIByBranchCode = async (branchCode) => {
     try {
         const [rows, fields] = await pool.execute(sql, [branchCode]);
         if (rows.length !== 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
@@ -116,7 +116,7 @@ const getCIByBranchCode = async (branchCode) => {
     try {
         const [rows, fields] = await pool.execute(sql, [branchCode]);
         if (rows.length !== 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
@@ -132,7 +132,7 @@ const getProvinceManagerForBranch = async (provinceId) => {
     try {
         const [rows, fields] = await pool.execute(sql, [provinceId]);
         if (rows.length !== 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
@@ -147,7 +147,7 @@ const getComplianceHead = async () => {
     try {
         const [rows, fields] = await pool.execute(sql);
         if (rows.length !== 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
@@ -161,7 +161,7 @@ const getAllStaffsCompliance = async () => {
     const sql = `select * from staff_list where departmentName='Compliance'`;
     try {
         const [rows, fields] = await pool.execute(sql);
-
+        return rows;
     } catch (error) {
         console.error('Error while fetching compliance list staffs ' + error);
         return false;
@@ -173,7 +173,7 @@ const getInternalAuditHead = async () => {
     try {
         const [rows, fields] = await pool.execute(sql);
         if (rows.length !== 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
@@ -218,6 +218,21 @@ const saveBranchList = async (branchList) => {
     }
 }
 
+const getBranchCode = async (branchName) => {
+    console.log("Fetching branch list " + branchName);
+    const sql = "select branchCode from branch_list where branchName=?";
+    try {
+        const [rows, fields] = await pool.execute(sql, [branchName]);
+        if (rows.length !== 0) {
+            let branchCode = rows[0].branchCode;
+            return branchCode;
+        }
+    } catch (error) {
+        console.log("Error while fetching branch code ");
+        return false;
+    }
+}
+
 
 module.exports = {
     saveStaffList,
@@ -230,5 +245,6 @@ module.exports = {
     getAllStaffsCompliance,
     getInternalAuditHead,
     getAllStaffInternalAudit,
-    saveBranchList
+    saveBranchList,
+    getBranchCode
 };

@@ -203,7 +203,7 @@ const getAuditCommentById = async (id) => {
     try {
         const [rows, fields] = await pool.execute(sql, [id]);
         if (rows.length !== 0) {
-            const auditCommentRecord=rows.pop();//as this only contains single record
+            const auditCommentRecord = rows.pop();//as this only contains single record
             return auditCommentRecord;
         } else {
             return false;
@@ -214,7 +214,7 @@ const getAuditCommentById = async (id) => {
 }
 
 //update audit status code after audit comment draft is finalized by IAD Head
-const setAuditStatusByIADHead = async (auditId,status)=>{
+const setAuditStatusByIADHead = async (auditId, status) => {
     const sql = "update audit_comment set auditStatus=? where auditId =? and auditStatus!='C';"
     try {
         const [rows, fields] = await pool.execute(sql, [status, auditId]);
@@ -222,6 +222,18 @@ const setAuditStatusByIADHead = async (auditId,status)=>{
     } catch (error) {
         console.error('Error while updating audit comment table auditStatus field ' + error);
         return false;
+    }
+}
+
+const countCommentRiskGrade = async (auditId) => {
+    const sql = `select riskGrade,count(riskGrade) from audit_comment where auditId=? and isDeleted='F' group by riskGrade
+                union all
+                select 'Total Comments',count(id) from audit_comment where auditId=? and isDeleted='F' group by auditId`;
+
+    try {
+
+    } catch (error) {
+        console.error("Error while fetching comment risk grade " + error);
     }
 }
 

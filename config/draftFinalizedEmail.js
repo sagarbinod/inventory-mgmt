@@ -1,4 +1,3 @@
-const cron = require('node-cron');
 const { getBMByBranchCode,
     getABMByBranchCode,
     getOIByBranchCode,
@@ -8,41 +7,86 @@ const { getBMByBranchCode,
     getAllStaffsCompliance,
     getInternalAuditHead,
     getAllStaffInternalAudit,
+    getBranchCode
 } = require('../controller/staffListController');
 
 const { saveEmailLog } = require('../controller/emailLogController');
 const { sendEmailFromApims } = require('../controller/apimsController');
 const { getAuditCommentById } = require('../controller/auditCommentController');
 
-const senderEmailAddress = process.env.SEND_EMAIL_ADDRESS;
-const senderEmailPassword = process.env.SEND_EMAIL_PASSWORD;
-const senderEmailAPI = process.env.EMAIL_API_APIMS;
-
-const emailModel = {
-    toAddress: "",
-    subject: "",
-    body: "",
-    ccAddress: "",
-    fromAddress: senderEmailAddress,
-    password: senderEmailPassword
-};
-
 async function sendDraftFinalizedEmail(auditRecord) {
+
+    let senderEmailAddress = process.env.SEND_EMAIL_ADDRESS;
+    let senderEmailPassword = process.env.SEND_EMAIL_PASSWORD;
+    let senderEmailAPI = process.env.EMAIL_API_APIMS;
+
+    let emailModel = {
+        toAddress: "",
+        subject: "",
+        body: "",
+        ccAddress: "",
+        fromAddress: senderEmailAddress,
+        password: senderEmailPassword
+    };
+
     console.log('sending email after audit comment draft is finalized ' + auditRecord.id);
     //sending email to branch BM, ABM after draft audit comment is approved by IAD Head
-    if (auditRecord.auditUit === 'Branch') {
-
+    if (auditRecord.auditUnit === 'Branch') {
+        let branchCode = await getBranchCode((auditRecord.auditUnitDesc).toUpperCase());
         try {
-            
+            let bmDetail = await getBMByBranchCode(branchCode);
+            let abmDetail = await getABMByBranchCode(branchCode);
+            let oiDetail = await getOIByBranchCode(branchCode);
+            let ciDetail = await getCIByBranchCode(branchCode);
+            let iadHead = await getInternalAuditHead();
+            let emailset = new Set();
+            if (bmDetail !== false) {
+                emailset.add(bmDetail.email);
+            }
+            if (abmDetail !== false) {
+                emailset.add(abmDetail.email);
+            }
+            if (oiDetail !== false) {
+                emailset.add(oiDetail.email);
+            }
+            if (ciDetail !== false) {
+                emailset.add(ciDetail.email);
+            }
 
-            return true;
+            //mailModel.toAddress = Array.from(emailset).join(",");
+            emailModel.toAddress = 'sagar.adhikari@ctznbank.com'
+            //emailModel.ccAddress = iadHead.email;
+            emailModel.ccAddress = 'sagar.adhikari@ctznbank.com'
+            emailModel.subject = `Audit Comment Draft Finalized from IAD of [${auditRecord.auditUnit} ${auditRecord.auditUnitDesc}]`
+            emailModel.body = `Dear Sir/Ma'am <br/><br/>
+                        We would like to draw your attention to the issues observed during 
+                        audit of [${auditRecord.auditUnit}-${auditRecord.auditUnitDesc}] 
+                        for [Year ${auditRecord.fiscalYear}].<br/><br/>
+                        Please provide the response on or before ${auditRecord.auditResponseDate}. <br/><br/><br/>
+                        Thank you.!`;
+            console.log(senderEmailAPI);
+            console.log(emailModel);
+            let result = await sendEmailFromApims(senderEmailAPI, emailModel);
+            console.log(result);
+            if (result.Code === '0') {
+            // let result = '0';                 //only for UAT
+            // if (result === '0') {             //only for UAT
+                console.log("Special attention email sent successfully ");
+                let { toAddress, ccAddress, subject, body } = emailModel;
+                let emailLogToSave = {
+                    "To": toAddress,
+                    "cc": ccAddress,
+                    "subject": subject,
+                    "Message": body
+                }
+                await saveEmailLog(emailLogToSave);
+                return true;
+            }
         } catch (error) {
-            console.error('Error while sending email to branch staff after audit comment draft is approved by IAD');
+            console.error('Error while sending email to branch staff after audit comment draft is approved by IAD' + error);
             return false;
         }
     }
-
-
 
 };
 
