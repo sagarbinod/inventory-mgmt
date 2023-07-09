@@ -5,7 +5,7 @@ const { insertAuditTeam,
     validateTeamMember } = require('../controller/auditTeamController');
 const { pool } = require('../config/mysqldatabase');
 const AuditMaster = require('../model/auditMaster');
-const formattedDateTime = require('../config/currentDate');
+const {formattedDateTime} = require('../config/currentDate');
 const { setAuditStatusByIADHead } = require('../controller/auditCommentController');
 const { sendDraftFinalizedEmail } = require('../config/draftFinalizedEmail');
 

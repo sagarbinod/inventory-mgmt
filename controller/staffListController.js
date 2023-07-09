@@ -198,6 +198,83 @@ const getAllStaffInternalAudit = async () => {
     }
 };
 
+const getChiefCreditOfficer = async () => {
+    const sql = `select * from staff_list where functionalTitle='Chief Credit Officer'`;
+    try {
+        const [rows, fields] = await pool.execute(sql);
+        if (rows.length !== 0) {
+            return rows;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error('Error while fetching chief credit officer ' + error);
+        return false;
+    }
+};
+
+const getChiefOperatingOfficer = async () => {
+    const sql = `select * from staff_list where functionalTitle='Chief Operating Officer'`;
+    try {
+        const [rows, fields] = await pool.execute(sql);
+        if (rows.length !== 0) {
+            return rows;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error('Error while fetching chief operating officer ' + error);
+        return false;
+    }
+};
+
+const getChiefExecutiveOfficer = async () => {
+    const sql = `select * from staff_list where designation='Chief Executive Officer'`;
+    try {
+        const [rows, fields] = await pool.execute(sql);
+        if (rows.length !== 0) {
+            return rows;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error('Error while fetching CHIEF EXECUTIVE OFFICER ' + error);
+        return false;
+    }
+};
+
+//11 emp id for paras kumar kafle
+const getDCEOOperation = async () => {
+    const sql = `select * from staff_list where employeeId='11'`;
+    try {
+        const [rows, fields] = await pool.execute(sql);
+        if (rows.length !== 0) {
+            return rows;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error('Error while fetching DCEO operation ' + error);
+        return false;
+    }
+};
+
+//16 emp id for sumit babu khatri
+const getDCEOCredit = async () => {
+    const sql = `select * from staff_list where employeeId='16'`;
+    try {
+        const [rows, fields] = await pool.execute(sql);
+        if (rows.length !== 0) {
+            return rows;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error('Error while fetching DCEO credit ' + error);
+        return false;
+    }
+}
+
 const saveBranchList = async (branchList) => {
     //console.log(branchList.Data.categoriesList);
     const sql = "truncate table branch_list";
@@ -234,6 +311,7 @@ const getBranchCode = async (branchName) => {
 }
 
 
+
 module.exports = {
     saveStaffList,
     getBMByBranchCode,
@@ -245,6 +323,11 @@ module.exports = {
     getAllStaffsCompliance,
     getInternalAuditHead,
     getAllStaffInternalAudit,
+    getChiefCreditOfficer,
+    getChiefOperatingOfficer,
+    getChiefExecutiveOfficer,
+    getDCEOOperation,
+    getDCEOCredit,
     saveBranchList,
     getBranchCode
 };

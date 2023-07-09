@@ -24,6 +24,7 @@ const addAuditComment = async (req, res) => {
     auditComment = req.body;
     commentSpecialMark = req.body.commentSpecialMark;
     commentSpecialAttn = req.body.commentSpecialAttn;
+
     console.log("Adding audit comment ");
     try {
         const sql = `insert into audit_comment (auditUnit,head,subHead1,subHead2,subHead3,
@@ -50,11 +51,14 @@ const addAuditComment = async (req, res) => {
                 console.log("Error while adding comment special attention " + error);
             }
         };
-        res.status(200).json("Comment Add Successful");
+        req.body.id = rows.insertId;
+        let response = { 'comment': req.body }
+        res.status(200).json(response);
     } catch (error) {
         console.error("Error while adding audit comment " + error);
         res.status(500).send("Error while adding audit comment " + error);
     };
+
 };
 
 const updateAuditCommentById = async (req, res) => {
@@ -120,24 +124,34 @@ const listAuditComentByAuditId = async (req, res) => {
         const sql = `select * from audit_comment where auditId =${auditId} and isDeleted='F'`;
         const [rows, fields] = await pool.execute(sql);
         if (rows.length > 0) {
-            const mergedResult = await rows.reduce(async (acc, row) => {
-                const commentId = row.id;
-                console.log(commentId);
-                const commentSpecialMark = await getCommentSpecialMarkByCommentId(commentId);
-                console.log(commentSpecialMark);
-                const commentSpecialAttn = await getCommentSpecialAttnByCommentId(commentId);
-                console.log(commentSpecialAttn);
-                row.commentSpecialMark = commentSpecialMark;
-                row.commentSpecialAttn = commentSpecialAttn;
-                acc.push(row);
-                return acc;
-            }, []);
+            const result = await Promise.all(rows.map(async (element) => {
+                element.commentSpecialMark = await getCommentSpecialMarkByCommentId(element.id);
+                element.commentSpecialAttn = await getCommentSpecialAttnByCommentId(element.id);
+                return element;
+            }
+            ));
+            mergedResult = { 'commentList': result };
             res.status(200).json(mergedResult);
         } else {
             res.status(404).json("Record does not exist");
         }
     } else {
         res.status(400).json("Audit id is missing");
+    }
+};
+
+//delete audit comment
+const deleteAuditComment = async (req, res) => {
+    const sql = `update audit_comment set isDeleted='T' where id=?`;    
+    try {
+        const [rows, fields] = await pool.execute(sql, [req.params.commentId]);
+        if (rows.affectedRows === 1) {
+            res.status(200).send("comment deleted");
+        } else {
+            res.status(500).send("Failed to delete comment");
+        }
+    } catch (error) {
+        console.error("Error while deleting audit comment " + error);
     }
 };
 
@@ -225,13 +239,17 @@ const setAuditStatusByIADHead = async (auditId, status) => {
     }
 }
 
+//for counting audit comment Risk staus : Low, Medium and High
 const countCommentRiskGrade = async (auditId) => {
-    const sql = `select riskGrade,count(riskGrade) from audit_comment where auditId=? and isDeleted='F' group by riskGrade
+    console.log("Fetching risk status " + auditId);
+    const sql = `select riskGrade 'riskGrade',count(riskGrade) 'noOfComments' from audit_comment where auditId=? and isDeleted='F' group by riskGrade
                 union all
                 select 'Total Comments',count(id) from audit_comment where auditId=? and isDeleted='F' group by auditId`;
-
     try {
-
+        const [rows, fields] = await pool.execute(sql, [auditId, auditId]);
+        if (rows.length !== 0) {
+            return rows;
+        }
     } catch (error) {
         console.error("Error while fetching comment risk grade " + error);
     }
@@ -241,9 +259,11 @@ module.exports = {
     addAuditComment,
     updateAuditCommentById,
     listAuditComentByAuditId,
+    deleteAuditComment,
     getAuditStatus,
     getComplianceStatus,
     getAFAuditIdForEmailNotSent,
     getAuditCommentById,
-    setAuditStatusByIADHead
+    setAuditStatusByIADHead,
+    countCommentRiskGrade
 }
