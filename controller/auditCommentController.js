@@ -133,7 +133,7 @@ const listAuditComentByAuditId = async (req, res) => {
             mergedResult = { 'commentList': result };
             res.status(200).json(mergedResult);
         } else {
-            res.status(404).json("Record does not exist");
+            res.status(200).json([]);
         }
     } else {
         res.status(400).json("Audit id is missing");
@@ -142,11 +142,12 @@ const listAuditComentByAuditId = async (req, res) => {
 
 //delete audit comment
 const deleteAuditComment = async (req, res) => {
-    const sql = `update audit_comment set isDeleted='T' where id=?`;    
+    const sql = `update audit_comment set isDeleted='T' where id=?`;
+    const commentId = req.body.commentId;
     try {
-        const [rows, fields] = await pool.execute(sql, [req.params.commentId]);
+        const [rows, fields] = await pool.execute(sql, [commentId]);
         if (rows.affectedRows === 1) {
-            res.status(200).send("comment deleted");
+            res.status(200).send({ "id": commentId, "message": "success" });
         } else {
             res.status(500).send("Failed to delete comment");
         }

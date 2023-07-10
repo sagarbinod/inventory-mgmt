@@ -29,6 +29,7 @@ require('./config/fileCleanup');
 //for sending email to audit special attention members after posting comment and after approval
 require('./config/sendEmailSpecialAttn');
 //for downloading staff list one a day 
+require('./config/firstEmailNotice');
 require('./config/staffListDownload');
 //CORS (Cross-Origin Resource Sharing middleware)
 app.use(cors());
@@ -45,7 +46,7 @@ app.use("/api/items", itemRouter);
 app.use("/api/users", userRouter);
 app.use("/api/apims", verifyToken, apimsRouter);
 app.use("/api/auditMaster", verifyToken, auditMasterRoute);
-app.use("/api/auditComment", auditCommentRoute);
+app.use("/api/auditComment", verifyToken, auditCommentRoute);
 app.use("/api/commentHeading", verifyToken, commentHeadingRoute);
 app.use("/api/commentReply", verifyToken, commentReplyRoute);
 app.use("/api/complianceFollowup", verifyToken, complianceFollowupRoute);

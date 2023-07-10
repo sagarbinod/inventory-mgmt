@@ -15,8 +15,6 @@ const { sendEmailFromApims } = require('../controller/apimsController');
 const { countCommentRiskGrade } = require('../controller/auditCommentController');
 const { getFormattedDate } = require('./currentDate');
 
-
-
 async function sendDraftFinalizedEmail(auditRecord) {
 
     // console.log(auditRecord);
@@ -83,7 +81,7 @@ async function sendDraftFinalizedEmail(auditRecord) {
                         <tr><th style="border: 1px solid black; padding: 8px; text-align: left;">Risk Grade </th>
                         <th style="border: 1px solid black; padding: 8px; text-align: left;">No of Comments</th></tr >    
                         ${riskStatusTable}</table> <br/><br/><br/>
-                        Thank you.!`;
+                        Thanking you.!`;
             //console.log(senderEmailAPI);
             //console.log(emailModel);
             let result = await sendEmailFromApims(senderEmailAPI, emailModel);

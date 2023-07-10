@@ -5,7 +5,7 @@ const { insertAuditTeam,
     validateTeamMember } = require('../controller/auditTeamController');
 const { pool } = require('../config/mysqldatabase');
 const AuditMaster = require('../model/auditMaster');
-const {formattedDateTime} = require('../config/currentDate');
+const { formattedDateTime } = require('../config/currentDate');
 const { setAuditStatusByIADHead } = require('../controller/auditCommentController');
 const { sendDraftFinalizedEmail } = require('../config/draftFinalizedEmail');
 
@@ -29,9 +29,10 @@ const addAuditMasterRecord = async (req, res) => {
             createdByName]);
         console.log('New Audit Record Added ' + result.insertId);
         await insertAuditTeam(result.insertId, auditTeam);
-        res.status(200).json("Record Added");
+        res.status(200).json({ "status": "Success", "Message": "Audit record added" });
     } catch (error) {
         console.error("Error while inserting data to audit master " + error);
+        res.status(500).json({ "status": "Failed", "Message": "Failed to add audit record" });
     }
 };
 
@@ -197,7 +198,7 @@ const verifyAuditMasterRecordIAD = async (req, res) => {
     const currentDateTime = formattedDateTime();
     const { id, auditVerifiedBy, auditResponseDate, auditRemarks } = req.body;
     const sql = `update audit_master set auditVerifiedBy=?,auditVerifiedOn=?, auditResponseDate=?, 
-                auditRemarks=? where id=?`;
+                auditRemarks=?, auditStatus='O' where id=?`;
     try {
         const [rows, fields] = await pool.execute
             (sql, [auditVerifiedBy, currentDateTime, auditResponseDate, auditRemarks, id]);
@@ -224,10 +225,44 @@ const verifyAuditMasterRecordIAD = async (req, res) => {
 };
 
 //close audit master record by audit head
-const closeAuditMasterRecordIAD = async () => {
-
+const closeAuditMasterRecordIAD = async (req, res) => {
+    const id = req.body.auditId;
+    const sql = "update audit_master set auditStatus='C' where id=?";
+    try {
+        const [rows, fields] = await pool.execute(sql, [id]);
+        if (rows.affectedRows === 1) {
+            res.status(200).send('Audit Master closed');
+        } else {
+            res.status(500).send('Internal Server Error');
+        }
+    } catch (error) {
+        console.error('Error while closing audit master record' + error);
+    }
 }
 
+//get count days after audit draft is forwarded
+const getAuditForwardedDays = async () => {
+    const sql = `select 
+                    c.id commentId, 
+                    m.id auditId,
+                    cast(now() as date)-cast(auditVerifiedOn as date) as daysDiff
+                from 
+                    audit_comment c join audit_master m 
+                on 
+                c.auditId=m.id and c.auditStatus='AF'
+                where m.isDeleted='F' and c.isDeleted='F'`;
+    try {
+        const [rows, fields] = await pool.execute(sql);
+        if (rows.length !== 0) {
+            return rows;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error('Error while fetching audit forwarded date count' + error);
+    }
+
+};
 
 module.exports = {
     addAuditMasterRecord,
@@ -236,5 +271,6 @@ module.exports = {
     getAuditMasterRecordById,
     deleteAuditMasterById,
     updateAuditMasterById,
-    verifyAuditMasterRecordIAD
+    verifyAuditMasterRecordIAD,
+    getAuditForwardedDays
 };

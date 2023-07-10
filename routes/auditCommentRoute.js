@@ -12,7 +12,7 @@ const {
 router.post("/addComment", addAuditComment);
 router.post("/updateAuditComment/:commentId", updateAuditCommentById);
 router.get("/listAuditComment/:auditId", listAuditComentByAuditId);
-router.post("/delete/:commentId", deleteAuditComment);
+router.post("/delete", deleteAuditComment);
 
 
 module.exports = router;

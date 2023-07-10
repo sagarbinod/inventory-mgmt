@@ -203,7 +203,7 @@ const getChiefCreditOfficer = async () => {
     try {
         const [rows, fields] = await pool.execute(sql);
         if (rows.length !== 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
@@ -218,7 +218,7 @@ const getChiefOperatingOfficer = async () => {
     try {
         const [rows, fields] = await pool.execute(sql);
         if (rows.length !== 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
@@ -233,7 +233,7 @@ const getChiefExecutiveOfficer = async () => {
     try {
         const [rows, fields] = await pool.execute(sql);
         if (rows.length !== 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
@@ -249,7 +249,7 @@ const getDCEOOperation = async () => {
     try {
         const [rows, fields] = await pool.execute(sql);
         if (rows.length !== 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
@@ -265,7 +265,7 @@ const getDCEOCredit = async () => {
     try {
         const [rows, fields] = await pool.execute(sql);
         if (rows.length !== 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
