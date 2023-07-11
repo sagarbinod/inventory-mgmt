@@ -119,10 +119,10 @@ const getAuditMasterRecordById = async (auditId) => {
 }
 
 const deleteAuditMasterById = async (req, res) => {
-    console.log('Deleting record from audit master ' + req.params.auditMasterId);
+    console.log('Deleting record from audit master ' + req.body.auditId);
     try {
-        if (req.params.auditMasterId) {
-            const sql = "update audit_master set isDeleted='T' where id=" + req.params.auditMasterId;
+        if (req.body.auditId) {
+            const sql = "update audit_master set isDeleted='T' where id=" + req.body.auditId;
             let [rows, fields] = await pool.execute(sql);
             res.status(200).json("Record Deleted");
         } else {
@@ -224,22 +224,6 @@ const verifyAuditMasterRecordIAD = async (req, res) => {
     }
 };
 
-//close audit master record by audit head
-const closeAuditMasterRecordIAD = async (req, res) => {
-    const id = req.body.auditId;
-    const sql = "update audit_master set auditStatus='C' where id=?";
-    try {
-        const [rows, fields] = await pool.execute(sql, [id]);
-        if (rows.affectedRows === 1) {
-            res.status(200).send('Audit Master closed');
-        } else {
-            res.status(500).send('Internal Server Error');
-        }
-    } catch (error) {
-        console.error('Error while closing audit master record' + error);
-    }
-}
-
 //get count days after audit draft is forwarded
 const getAuditForwardedDays = async () => {
     const sql = `select 
@@ -261,8 +245,33 @@ const getAuditForwardedDays = async () => {
     } catch (error) {
         console.error('Error while fetching audit forwarded date count' + error);
     }
-
 };
+
+const closeAuditByIAD = async (req, res) => {
+    const { auditClosedBy, auditId } = req.body;
+    const currentDateTime = formattedDateTime();
+    console.log(currentDateTime);
+    const sql = `update audit_master set auditStatus='C', auditClosedBy=?, 
+                    auditClosedOn=? where id=? and auditStatus='O'`;
+    try {
+        const [rows, fields] = await pool.execute(sql, [auditClosedBy, currentDateTime, auditId]);
+        if (rows.affectedRows === 1) {
+            let checkStatus = await setAuditStatusByIADHead(auditId, 'C');
+            if (checkStatus === true) {
+                res.status(200).send('success');
+            }
+            else {
+                res.status(500).send('Internal Server error');
+            }
+        } else {
+            res.status(500).send('Internal server error');
+        }
+    } catch (error) {
+        console.error('Error while closing audit master record by audit department' + error);
+        res.status(500).send(error);    
+    }
+
+}
 
 module.exports = {
     addAuditMasterRecord,
@@ -272,5 +281,6 @@ module.exports = {
     deleteAuditMasterById,
     updateAuditMasterById,
     verifyAuditMasterRecordIAD,
-    getAuditForwardedDays
+    getAuditForwardedDays,
+    closeAuditByIAD
 };

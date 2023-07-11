@@ -159,14 +159,18 @@ const deleteAuditComment = async (req, res) => {
 //check the audit comment status wheather comment is approved by head or not
 //also check the audit comment status if it is closed or not
 const getAuditStatus = async (commentId) => {
+    console.log('Getting audit status ..');
     const sql = "select auditStatus from audit_comment where id=? and isDeleted='F'";
     try {
         const [rows, fields] = await pool.execute(sql, [commentId]);
-        let auditStatus = "";
-        rows.forEach(element => auditStatus = element.auditStatus);
-        return auditStatus;
+        if (rows.length === 1) {
+            return rows[0].auditStatus;
+        } else {
+            return false;
+        }
     } catch (error) {
         console.error("Error while validating audit comment");
+        return false;
     }
 };
 
@@ -187,7 +191,11 @@ const setAuditStatus = async (commentId, status) => {
     const sql = "update audit_comment set auditStatus=? where id =? and auditStatus!='C';"
     try {
         const [rows, fields] = await pool.execute(sql, [status, commentId]);
-        return true;
+        if (rows.affectedRows === 1) {
+            return true;
+        } else {
+            return false;
+        }
     } catch (error) {
         console.error('Error while updating audit comment table auditStatus field ' + error);
         return false;
@@ -256,6 +264,21 @@ const countCommentRiskGrade = async (auditId) => {
     }
 }
 
+const setAuditStatusForCommentReply = async (commentId, auditStatus) => {
+    const sql = 'update audit_comment set auditStatus=? where id=?';
+    try {
+        const [rows, fields] = await pool.execute(sql, [auditStatus, commentId]);
+        if (rows.affectedRows === 1) {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error('Error while updating audit status during comment reply ' + error);
+        return false;
+    }
+};
+
 module.exports = {
     addAuditComment,
     updateAuditCommentById,
@@ -266,5 +289,6 @@ module.exports = {
     getAFAuditIdForEmailNotSent,
     getAuditCommentById,
     setAuditStatusByIADHead,
-    countCommentRiskGrade
+    countCommentRiskGrade,
+    setAuditStatusForCommentReply
 }

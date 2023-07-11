@@ -51,7 +51,8 @@ const sendEmail = async () => {
 
             //code to send email
             try {
-                emailModel.toAddress = toEmailList;
+                //emailModel.toAddress = toEmailList;
+                emailModel.toAddress = 'sagar.adhikari@ctznbank.com'
                 emailModel.ccAddress = '';
                 emailModel.subject = `Special attention issue from internal audit of ${auditRecord.auditUnit} ${auditRecord.auditUnitDesc}`;
                 //to check the audit unit for either operation or credit
