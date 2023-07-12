@@ -14,6 +14,7 @@ class AuditComment {
     commentInDetail;
     auditId;
     createdBy;
+    createdByName;
     createnOn;
     auditStatus;
     closingRemarksAudit;

@@ -28,14 +28,14 @@ const addAuditComment = async (req, res) => {
     console.log("Adding audit comment ");
     try {
         const sql = `insert into audit_comment (auditUnit,head,subHead1,subHead2,subHead3,
-            standardComment,riskGrade,nonCompliance,refPolicy,commentInDetail,auditId,createdBy)
+            standardComment,riskGrade,nonCompliance,refPolicy,commentInDetail,auditId,createdBy,createdByName)
                     values 
-                    (?,?,?,?,?,?,?,?,?,?,?,?)`;
+                    (?,?,?,?,?,?,?,?,?,?,?,?,?)`;
         console.log(sql);
         const [rows, fields] = await pool.execute(sql, [auditComment.auditUnit, auditComment.head, auditComment.subHead1,
         auditComment.subHead2, auditComment.subHead3, auditComment.standardComment,
         auditComment.riskGrade, auditComment.nonCompliance, auditComment.refPolicy,
-        auditComment.commentInDetail, auditComment.auditId, auditComment.createdBy]);
+        auditComment.commentInDetail, auditComment.auditId, auditComment.createdBy, auditComment.createdByName]);
         console.log("New Audit comment added: " + rows.insertId);
         if (rows.insertId) {
             try {
@@ -61,6 +61,7 @@ const addAuditComment = async (req, res) => {
 
 };
 
+/*
 const updateAuditCommentById = async (req, res) => {
     console.log(req.body);
     let auditComment = new AuditComment();
@@ -71,14 +72,14 @@ const updateAuditCommentById = async (req, res) => {
     commentSpecialAttn = req.body.commentSpecialAttn;
     console.log("Adding audit comment " + req.body.id);
     const sql = `update audit_comment set auditUnit=?, head=?, subHead1=?, subHead2=?, subHead3=?
-    , standardComment=?, riskGrade=?, nonCompliance=?, refPolicy=?, commentInDetail=?, auditStatus=?,
-    closingRemarksAudit=? where id=? and isDeleted='F'`;
+    , standardComment=?, riskGrade=?, nonCompliance=?, refPolicy=?, commentInDetail=?
+    where id=? and isDeleted='F'`;
 
     try {
         const [rows, fields] = await pool.execute(sql, [auditComment.auditUnit, auditComment.head,
         auditComment.subHead1, auditComment.subHead2, auditComment.subHead3, auditComment.standardComment,
         auditComment.riskGrade, auditComment.nonCompliance, auditComment.refPolicy, auditComment.commentInDetail,
-        auditComment.auditStatus, auditComment.closingRemarksAudit, auditComment.id]);
+        auditComment.id]);
         if (rows.affectedRows === 1) {
             if (commentSpecialMark.length > 0) {
                 commentSpecialMark.forEach(async (row) => {
@@ -105,8 +106,6 @@ const updateAuditCommentById = async (req, res) => {
                     }
                 });
             }
-            //await updateCommentSpecialMarkByCommentId(auditComment.id, commentSpecialMark);
-            //await updateCommentSpecialAttnByCommentId(auditComment.id, commentSpecialAttn);
             res.status(200).send("Comment updated successfully");
         } else {
             res.status(500).send("Failed to update");
@@ -116,6 +115,25 @@ const updateAuditCommentById = async (req, res) => {
     };
 
 };
+*/
+const updateAuditCommentById = async (req, res) => {
+    let auditComment = new AuditComment();
+    auditComment = req.body;
+    const sql = 'update audit_comment set commentInDetail=? where id=?';
+    try {
+        const [rows, fields] = await pool.execute(sql, [auditComment.commentInDetail, auditComment.id]);
+        if (rows.affectedRows === 1) {
+            res.status(200).send({ "id": auditComment.id, "message": "success" });
+        } else {
+            res.status(500).send('update failed');
+        }
+    } catch (error) {
+        console.error('Error while updating audit comment ' + error);
+        res.status(500).send('Internal server error');
+    }
+
+}
+
 
 const listAuditComentByAuditId = async (req, res) => {
     console.log("Getting all comments list based on audit id");
