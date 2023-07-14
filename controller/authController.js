@@ -55,7 +55,7 @@ const adLoginUser = (req, res) => {
 
   client.bind(domainName, password, (err) => {
     if (err) {
-      res.status(401).send(err);
+      res.status(200).send({ "status": "failed", "message": "invalid credentials" });
     } else {
       //GET THE EMPLOYEE DETAIL BASED ON DOMAIN NAME WHILE AUTHENTICATING
       const functionName = process.env.EMP_DETAIL_BY_DOMAIN;
@@ -63,19 +63,57 @@ const adLoginUser = (req, res) => {
 
       async function fetchData() {
         const empDetail = await callAPI(functionName, requestModel);
+        console.log(empDetail);
         if (empDetail) {
           const accessToken = jwt.sign(
             { "data": empDetail },
             process.env.JWT_SECRET,
             { "expiresIn": "1d" });
-              empDetail.Data.token=accessToken;
+          empDetail.Data.token = accessToken;
           res.status(200).json(empDetail);
         } else {
           res.status(401).send("Authentication Failed");
         }
       };
       fetchData();
-      //res.status(200).send('Authentication successful');
+
+      /*
+      async function fetchData() {
+        const empDetail = {
+          "Code": "0",
+          "Data": {
+            "branchManagerDesignation": "",
+            "branchManagerName": "",
+            "branchType": "Inside Valley",
+            "departmentName": "Information Technology Department",
+            "designation": "Supervisor",
+            "domainUserName": "sunil.gurung",
+            "email": "sunil.gurung@ctznbank.com",
+            "employeeId": "1923",
+            "employeeName": "Sunil Gurung",
+            "functionalTitle": "",
+            "isProvinceManager": "N",
+            "phone": "9840021160",
+            "solDesc": "Corporate Office",
+            "solId": "999"
+          },
+          "DeveloperMessage": null,
+          "Errors": null,
+          "Message": "Operation Successfull"
+        };
+        if (empDetail) {
+          const accessToken = jwt.sign(
+            { "data": empDetail },
+            process.env.JWT_SECRET,
+            { "expiresIn": "1d" });
+          empDetail.Data.token = accessToken;
+          res.status(200).json(empDetail);
+        } else {
+          res.status(401).send("Authentication Failed");
+        }
+      };
+      */
+
     }
     client.unbind();
   });

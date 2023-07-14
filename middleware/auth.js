@@ -22,6 +22,8 @@ const verifyTokenAdmin = (req, res, next) => {
         res.status(401).json("Token is not valid");
       }
       if (decoded.isAdmin) {
+
+
         next();
       } else {
         res.status(403).json("You are not authorized!");
@@ -57,13 +59,14 @@ const verifyTokenAdminOrUser = (req, res, next) => {
 const verifyToken = async (req, res, next) => {
   if (req.headers.authorization) {
     const token = req.headers.authorization.split(" ")[1];
-    console.log("Token " + token);
-   await jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    //console.log("Token " + token);
+    await jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
-        res.status(401).json("Token is not valid"+err);
+        res.status(401).json("Token is not valid" + err);
       } else {
-        console.log("Token is valid " + token);
-        //res.status(200).send("Token is vlaid");
+
+        console.log('Token is valid');
+        req.body.token_data = jwt.decode(token).data.Data;
         next();
       }
     });

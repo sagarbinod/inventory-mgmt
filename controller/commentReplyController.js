@@ -18,9 +18,10 @@ const addCommentReply = async (req, res) => {
                 const [rows, fields] = await pool.execute(sql, [commentReply.commentId,
                 commentReply.enteredBy, commentReply.commentReply]);
                 if (rows.affectedRows === 1) {
-                    if (commentReply.solId === '999') {
+                    let staffDeptName = req.body.token_data.departmentName;
+                    if (staffDeptName === 'Branch Monitoring') {
                         await setAuditStatusForCommentReply(commentReply.commentId, 'BP');
-                    } else if (commentReply.solId !== '999') {
+                    } else if (staffDeptName !== 'Branch Monitoring') {
                         await setAuditStatusForCommentReply(commentReply.commentId, 'AP');
                     }
                     res.status(200).send("Comment Reply added successfully");
